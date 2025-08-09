@@ -52,7 +52,7 @@ export default function InnerHomeScreen() {
         <Text style={ps('f-1 text-lg text-normal')}>test the theme switch</Text>
       </Pressable>
 
-      <Text className="mb-12 self-center" style={ps('f-1 text-xl text-normal')}>theme name: {ctn}</Text>
+      <Text className="mb-12 self-center" style={ps('f-1 text-xl text-normal')}>Current theme name: {ctn}</Text>
 
 
 
