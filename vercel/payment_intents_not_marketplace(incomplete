@@ -1,0 +1,27 @@
+
+
+// Every backend API file follows this pattern:
+import Stripe from 'stripe';
+
+// Secret key only accessible on server
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  apiVersion: '2023-10-16'
+});
+
+export default async function handler(req, res) {
+  // Verify user authentication
+  const user = await verifyUserToken(req.headers.authorization);
+  if (!user) return res.status(401).json({ error: 'Unauthorized' });
+  
+  // Use secret key for Stripe operations
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: req.body.amount,
+    currency: 'usd',
+    customer: user.stripe_customer_id
+  });
+  
+  // Only return client_secret to frontend
+  res.json({ 
+    client_secret: paymentIntent.client_secret 
+  });
+}

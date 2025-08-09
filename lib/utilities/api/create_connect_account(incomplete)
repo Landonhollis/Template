@@ -1,0 +1,14 @@
+// Your frontend
+const handleCreateConnectAccount = async () => {
+  // Call your backend API
+  const response = await fetch('/api/create-connect-account', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${userJWT}` },
+    body: JSON.stringify({ user_id: user.id })
+  });
+  
+  const { account_link_url } = await response.json();
+  
+  // Redirect user to Stripe onboarding
+  window.location.href = account_link_url;
+};

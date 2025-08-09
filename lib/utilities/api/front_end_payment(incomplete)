@@ -1,0 +1,20 @@
+// Frontend component
+// Payer will run this
+const handlePayment = async () => {
+  const { client_secret } = await fetch('/api/create-marketplace-payment', {
+    method: 'POST',
+    body: JSON.stringify({ amount: 5000, recipient_user_id: '123' })
+  }).then(r => r.json());
+  
+  const { error } = await stripe.confirmCardPayment(client_secret, {
+    payment_method: {
+      card: elements.getElement(CardElement),
+      billing_details: { name: user.name }
+    }
+  });
+  
+  if (!error) {
+    // Payment succeeded - webhook will update database
+    router.push('/payment-success');
+  }
+};

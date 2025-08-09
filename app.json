@@ -1,3 +1,4 @@
+
 {
   "expo": {
     "name": "practice-2",
@@ -33,10 +34,17 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    }, 
+    "fonts": [
+      "./assets/fonts/Lora-Italic.ttf", 
+      "./assets/fonts/Lora.ttf", 
+      "./assets/fonts/DM.ttf",
+      "./assets/fonts/DM-Italic.ttf"
+    ]
   }
 }

@@ -1,0 +1,18 @@
+// Your backend function
+async function verifyUserToken(authHeader) {
+  // Extract token from "Bearer TOKEN_HERE"
+  const token = authHeader?.replace('Bearer ', '');
+  if (!token) return null;
+  
+  // Use Supabase to verify the JWT
+  const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY // Server-side key
+  );
+  
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  
+  if (error || !user) return null;
+  
+  return user; // Returns user data if token is valid
+}

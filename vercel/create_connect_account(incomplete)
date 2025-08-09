@@ -1,0 +1,51 @@
+
+
+
+// This runs on YOUR server with YOUR secret key
+// Create account
+// Create onboarding link
+// Update onboarding status in supabase
+// Return account link URL and account ID
+
+// /api/create-connect-account.ts (Vercel function)
+export default async function handler(req, res) {
+  // This runs on YOUR server with YOUR secret key
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  
+  // Extract user from JWT
+  const { user_id } = verifyJWT(req.headers.authorization);
+  
+  const account = await stripe.accounts.create({
+    type: 'express',
+    country: 'US',
+    email: user.email, // From your database
+    business_type: 'individual', // or 'company'
+    metadata: {
+      user_id: user_id, // Link back to your user
+      created_via: 'marketplace_signup'
+    }
+  });
+  
+  // Create onboarding link
+  const accountLink = await stripe.accountLinks.create({
+    account: account.id,
+    refresh_url: 'https://yourapp.com/connect-refresh',
+    return_url: 'https://yourapp.com/connect-success',
+    type: 'account_onboarding'
+  });
+  
+  // Store in your database IMMEDIATELY
+  await supabase
+    .from('user_preferences')
+    .update({
+      stripe_connect_account_id: account.id,
+      stripe_connect_status: 'onboarding_started',
+      stripe_connect_created_at: new Date().toISOString()
+    })
+    .eq('user_id', user_id);
+    
+  return res.json({ 
+    account_link_url: accountLink.url,
+    connect_account_id: account.id 
+  });
+}

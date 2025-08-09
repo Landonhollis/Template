@@ -1,0 +1,38 @@
+// /api/stripe-webhooks.ts
+export default async function handler(req, res) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  
+  // Verify webhook is from Stripe
+  const sig = req.headers['stripe-signature'];
+  const event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+  
+  switch (event.type) {
+    case 'account.updated':
+      await handleAccountUpdated(event.data.object);
+      break;
+    case 'payment_intent.succeeded':
+      await handlePaymentSuccess(event.data.object);
+      break;
+  }
+  
+  res.json({ received: true });
+}
+
+async function handleAccountUpdated(account) {
+  const user_id = account.metadata.user_id;
+  
+  // Extract meaningful data from Stripe account object
+  const updateData = {
+    stripe_connect_status: account.charges_enabled ? 'active' : 'restricted',
+    stripe_connect_onboarding_completed: account.details_submitted,
+    stripe_connect_payouts_enabled: account.payouts_enabled,
+    stripe_connect_requirements: account.requirements
+  };
+  
+  // Update your database
+  await supabase
+    .from('user_preferences')  
+    .update(updateData)
+    .eq('user_id', user_id);
+}

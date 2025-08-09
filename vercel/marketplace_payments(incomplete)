@@ -1,0 +1,37 @@
+
+
+// The payer is the one who enacts this function. 
+
+// Backend: /api/create-marketplace-payment.ts
+export default async function handler(req, res) {
+  const { amount, recipient_user_id, description } = req.body;
+  const payer = await verifyUser(req.headers.authorization);
+  
+  // Get recipient's Connect account
+  const { data: recipient } = await supabase
+    .from('user_preferences')
+    .select('stripe_connect_account_id')
+    .eq('user_id', recipient_user_id)
+    .single();
+    
+  // Calculate platform fee (e.g., 3%)
+  const platformFee = Math.round(amount * 0.03);
+  
+  // Create Payment Intent
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: 'usd',
+    customer: payer.stripe_customer_id,
+    application_fee_amount: platformFee,
+    transfer_data: {
+      destination: recipient.stripe_connect_account_id
+    },
+    metadata: {
+      payer_id: payer.id,
+      recipient_id: recipient_user_id,
+      description: description
+    }
+  });
+  
+  res.json({ client_secret: paymentIntent.client_secret });
+}
